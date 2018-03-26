@@ -62,34 +62,42 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+%Y = eye(num_labels)(y, :);
 
-Y = eye(num_labels)(y, :);
+I = eye(num_labels);
+Y = zeros(m, num_labels);
+for i = 1 : m
+  Y(i, :) = I(y(i), :);
+end
 
 a1 = [ones(rows(X), 1) X];
+z2 = a1 * Theta1';
 a2 = sigmoid(a1 * Theta1');
 a2 = [ones(rows(a2), 1) a2];
+z3 = a2 * Theta2';
 h = sigmoid(a2 * Theta2');
 
 unreg_J = (1/m) * ( sum (sum ( (-Y .* (log(h))) - ( (1-Y) .* ( log( 1-h))))));
 
-Theta1 = Theta1(:, 2:end);
-Theta2 = Theta2(:, 2:end);
+Theta1_reg = Theta1(:, 2:end);
+Theta2_reg = Theta2(:, 2:end);
 
-%J = unreg_J + (lambda / (2 * m)) * (sum(sumsq(Theta1)) + sum(sumsq(Theta2)));;
+J = unreg_J + ((lambda/(2*m)) * (sum(sum((Theta1_reg.^2))) + sum(sum((Theta2_reg.^2))))); 
 
-J = unreg_J + ((lambda/(2*m)) * (sum(sum((Theta1.^2))) + sum(sum((Theta2.^2))))); 
+%Backprop
 
+% step 2
+delta_3 = h - Y;
+% step 3
+delta_2 = (delta_3 * Theta2 .* sigmoidGradient([ones(size(z2), 1) z2]))(:, 2:end);
 
+% step 4
+Delta2 = delta_3' * a2;
+Delta1 = delta_2' * a1;
 
-
-
-
-
-
-
-
-
-
+% step 5
+Theta1_grad = 1 / m * Delta1 + lambda / m * [zeros(size(Theta1), 1) Theta1(:, 2:end)];
+Theta2_grad = 1 / m * Delta2 + lambda / m * [zeros(size(Theta2), 1) Theta2(:, 2:end)];
 
 
 
